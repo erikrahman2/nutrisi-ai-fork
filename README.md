@@ -1,8 +1,8 @@
 # 🥗 Nutrisi.AI - Medical Grade Nutrition Assistant
 
-![alt text](nutrisiAIfe/public/image.png)
-
 <div align="center">
+  <img src="nutrisiAIfe/public/image.png" alt="Nutrisi.AI Banner" width="70%">
+</div>
 
 ![React](https://img.shields.io/badge/Frontend-React_Vite-blue?style=for-the-badge\&logo=react)
 ![Node.js](https://img.shields.io/badge/Backend-Node.js-green?style=for-the-badge\&logo=node.js)
