@@ -11,15 +11,22 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
+    "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
+    "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
+    "chartjs-plugin-annotation": "^3.1.0",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.19",
     "framer-motion": "^12.23.25",
     "react": "^19.2.0",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.10.1",
+    "sweetalert2": "^11.26.4",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
