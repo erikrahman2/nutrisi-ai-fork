@@ -1,5 +1,5 @@
 const FoodLog = require('../models/FoodLog');
-const { Op } = require('sequelize');
+const { Op } = require('sequelize'); // <--- WAJIB ADA! (Sering lupa)
 
 exports.addFood = async (req, res) => {
     try {
@@ -15,6 +15,7 @@ exports.addFood = async (req, res) => {
 
 exports.getTodayLogs = async (req, res) => {
     try {
+        // Set range waktu hari ini (00:00 - 23:59)
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
@@ -24,14 +25,15 @@ exports.getTodayLogs = async (req, res) => {
         const logs = await FoodLog.findAll({
             where: {
                 user_id: req.user.id,
-                created_at: {
-                    [Op.between]: [startOfDay, endOfDay]
+                createdAt: {
+                    [Op.between]: [startOfDay, endOfDay] // <--- Ini butuh variable Op di atas
                 }
             },
-            order: [['created_at', 'DESC']]
+            order: [['createdAt', 'DESC']]
         });
         res.json(logs);
     } catch (error) {
+        console.error("Error getTodayLogs:", error); // Biar error muncul di terminal
         res.status(500).json({ error: error.message });
     }
 };

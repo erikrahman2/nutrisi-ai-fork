@@ -60,7 +60,7 @@ export default function Register() {
                                 <input type="number" placeholder="Tinggi (cm)" onChange={e=>setForm({...form, height_cm:e.target.value})} className="w-full p-3 rounded-xl bg-white/50 border border-white outline-none" required />
                             </div>
                             
-                            <div className="flex gap-2 mt-4">
+                            <div className="flex gap-2 mt-4" >
                                 <button type="button" onClick={()=>setStep(1)} className="flex-1 py-3 bg-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-300">Kembali</button>
                                 <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg">Daftar</button>
                             </div>

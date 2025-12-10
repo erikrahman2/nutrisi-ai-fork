@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useContext } from 'react';
-import api from '../services/api';
+import api from '../services/api'; // Pastikan path ini benar sesuai struktur project
 import { AuthContext } from '../context/AuthContext';
-import { checkMedicalRisk } from '../utils/nutritionCalc';
+import { checkMedicalRisk } from '../utils/nutritionCalc'; // Pastikan utils ini ada
 import { Camera as CameraIcon, Upload, X, CheckCircle, Aperture, Lightning } from '@phosphor-icons/react';
 import Swal from 'sweetalert2';
 import confetti from 'canvas-confetti';
@@ -17,6 +17,7 @@ export default function Camera() {
     const canvasRef = useRef(null);
     const fileInputRef = useRef(null);
 
+    // --- LOGIKA KAMERA ---
     const startCamera = async () => {
         setIsCameraOpen(true);
         try {
@@ -55,32 +56,52 @@ export default function Camera() {
         }
     };
 
+    // --- LOGIKA UPLOAD ---
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) handleUploadProcess(file);
     };
 
     const handleUploadProcess = async (file) => {
+        // Preview gambar lokal
         setImageSrc(URL.createObjectURL(file));
         setLoading(true);
+        setResult(null); // Reset hasil lama
         
         const formData = new FormData();
         formData.append('image', file);
 
         try {
+            console.log("Mengirim gambar ke backend...");
             const res = await api.post('/scan', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setResult(res.data);
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+            console.log("Respon Backend:", res.data);
+
+            // ✅ PERBAIKAN UTAMA DISINI:
+            // Cek status success dari backend
+            if (res.data.success) {
+                // Ambil data nutrisi yang ada di dalam properti .data
+                setResult(res.data.data); 
+                
+                // Efek Confetti
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            } else {
+                Swal.fire('Gagal', res.data.message || 'Gagal mengenali makanan', 'warning');
+                setImageSrc(null); // Reset gambar jika gagal
+            }
+
         } catch (err) {
-            Swal.fire('Error', 'Gagal memproses gambar', 'error');
+            console.error(err);
+            Swal.fire('Error', 'Gagal terhubung ke server AI', 'error');
             setImageSrc(null);
         } finally {
             setLoading(false);
         }
     };
 
+    // --- LOGIKA PENYIMPANAN ---
     const handleSaveConfirmation = () => {
         if (!result || !user) return;
 
@@ -121,7 +142,11 @@ export default function Camera() {
     };
 
     const saveFoodToDB = async () => {
+        if (!result) return;
+        
         try {
+            // Kita kirim data hasil scan ke endpoint penyimpanan (/food)
+            // Pastikan image_url ikut dikirim agar tersimpan di history
             await api.post('/food', {
                 food_name: result.food_name,
                 calories: result.calories,
@@ -131,12 +156,25 @@ export default function Camera() {
                 sugar_g: result.sugar_g,
                 salt_mg: result.salt_mg,
                 fiber_g: result.fiber_g,
-                grade: result.grade
+                grade: result.grade,
+                image_url: result.image_url // ✅ Penting: URL gambar dari server
             });
-            Swal.fire({ icon: 'success', title: 'Tersimpan!', text: 'Data nutrisi berhasil dicatat.', timer: 1500, showConfirmButton: false });
-            setResult(null); setImageSrc(null);
+
+            Swal.fire({ 
+                icon: 'success', 
+                title: 'Tersimpan!', 
+                text: 'Data nutrisi berhasil dicatat ke jurnal harian.', 
+                timer: 2000, 
+                showConfirmButton: false 
+            });
+
+            // Reset form setelah simpan sukses
+            setResult(null); 
+            setImageSrc(null);
+
         } catch(err) {
-            Swal.fire('Error', 'Gagal menyimpan', 'error');
+            console.error("Save Error:", err);
+            Swal.fire('Error', 'Gagal menyimpan ke database', 'error');
         }
     };
 
@@ -144,8 +182,11 @@ export default function Camera() {
         return () => stopCamera();
     }, []);
 
+    // --- RENDER UI ---
     return (
         <div className="h-full flex flex-col items-center justify-center animate-fade-in p-4 pb-24">
+            
+            {/* TAMPILAN AWAL (TOMBOL SCAN) */}
             {!imageSrc && !isCameraOpen && (
                 <div className="w-full max-w-lg bg-white/70 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-2xl text-center space-y-8">
                     <div className="space-y-2">
@@ -155,7 +196,7 @@ export default function Camera() {
                         <h2 className="text-2xl font-extrabold text-slate-800">Scan Makananmu</h2>
                         <p className="text-slate-500 font-medium">AI akan mendeteksi nutrisi secara otomatis</p>
                     </div>
-
+            
                     <div className="grid grid-cols-2 gap-4">
                         <button onClick={startCamera} className="flex flex-col items-center justify-center gap-3 p-6 bg-blue-600 text-white rounded-3xl hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 hover:scale-105 active:scale-95 group">
                             <CameraIcon size={32} weight="bold" className="group-hover:rotate-12 transition-transform"/>
@@ -171,6 +212,7 @@ export default function Camera() {
                 </div>
             )}
 
+            {/* TAMPILAN KAMERA FULLSCREEN */}
             {isCameraOpen && (
                 <div className="fixed inset-0 z-50 bg-black flex flex-col">
                     <video ref={videoRef} autoPlay playsInline className="flex-1 w-full h-full object-cover" />
@@ -187,50 +229,64 @@ export default function Camera() {
                 </div>
             )}
 
+            {/* TAMPILAN HASIL / LOADING */}
             {imageSrc && (
-                <div className="w-full max-w-md bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white overflow-hidden relative">
+                <div className="w-full max-w-md bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white overflow-hidden relative transition-all duration-500">
+                    
+                    {/* Bagian Gambar */}
                     <div className="relative h-64 bg-slate-900">
-                        <img src={imageSrc} className="w-full h-full object-cover opacity-80" />
+                        <img src={imageSrc} className="w-full h-full object-cover opacity-90" alt="Food Scan" />
+                        
+                        {/* Loading Overlay */}
                         {loading && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/40 backdrop-blur-sm">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/50 backdrop-blur-sm">
                                 <div className="relative">
                                     <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
                                     <Lightning size={24} weight="fill" className="text-yellow-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
                                 </div>
-                                <p className="text-white font-bold mt-4 tracking-wider text-sm animate-pulse">AI ANALYZING...</p>
+                                <p className="text-white font-bold mt-4 tracking-wider text-sm animate-pulse">AI SEDANG MENGANALISIS...</p>
                             </div>
                         )}
+                        {/* Garis Scan Efek */}
                         {loading && <div className="absolute top-0 left-0 w-full h-1 bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,1)] animate-scan"></div>}
+                        
+                        {/* Overlay Nama Makanan Setelah Loading */}
                         {!loading && result && (
                             <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-6 pt-12">
-                                <h2 className="text-3xl font-extrabold text-white mb-1">{result.food_name}</h2>
-                                <p className="text-slate-300 text-sm font-medium">Akurasi AI: 94%</p>
+                                <h2 className="text-3xl font-extrabold text-white mb-1 capitalize">{result.food_name.replace(/_/g, ' ')}</h2>
+                                <p className="text-slate-300 text-xs font-medium bg-black/30 w-fit px-2 py-1 rounded">Confident: High</p>
                             </div>
                         )}
                     </div>
 
+                    {/* Bagian Detail Nutrisi */}
                     {!loading && result && (
-                        <div className="p-6">
+                        <div className="p-6 animate-slide-up">
                             <div className="flex items-center justify-between mb-6">
                                 <div>
                                     <span className="text-4xl font-extrabold text-slate-800">{result.calories}</span>
                                     <span className="text-sm font-bold text-slate-400 ml-1">kcal</span>
                                 </div>
-                                <div className={`px-4 py-2 rounded-xl font-bold text-lg border-2 ${result.grade === 'A' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
+                                <div className={`px-4 py-2 rounded-xl font-bold text-lg border-2 ${
+                                    result.grade === 'A' ? 'bg-green-50 text-green-600 border-green-200' : 
+                                    result.grade === 'B' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                    result.grade === 'C' ? 'bg-yellow-50 text-yellow-600 border-yellow-200' :
+                                    'bg-red-50 text-red-600 border-red-200'
+                                }`}>
                                     Grade {result.grade}
                                 </div>
                             </div>
                             
                             <div className="grid grid-cols-3 gap-3 mb-8">
-                                <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100">
+                                <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100 hover:bg-white hover:shadow-md transition">
                                     <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Gula</p>
                                     <p className="font-extrabold text-purple-600 text-lg">{result.sugar_g}g</p>
                                 </div>
-                                <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100">
+                                <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100 hover:bg-white hover:shadow-md transition">
                                     <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Garam</p>
                                     <p className="font-extrabold text-slate-600 text-lg">{result.salt_mg}mg</p>
                                 </div>
-                                <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100">
+                                <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100 hover:bg-white hover:shadow-md transition">
                                     <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Lemak</p>
                                     <p className="font-extrabold text-red-500 text-lg">{result.fat_g}g</p>
                                 </div>
