@@ -1,24 +1,21 @@
 import { useState, useRef, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
-import { Camera as CameraIcon, Upload, X, CheckCircle, Warning, FirstAid, Aperture, Lightning, ListBullets } from '@phosphor-icons/react';
+import { Camera as CameraIcon, Upload, X, CheckCircle, Warning, FirstAid, ListBullets } from '@phosphor-icons/react';
 import Swal from 'sweetalert2';
 
 export default function Camera() {
     const { user } = useContext(AuthContext);
     
-    // State
     const [imageSrc, setImageSrc] = useState(null);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
-    const [isCameraOpen, setIsCameraOpen] = useState(false); // ✅ Kembalikan state kamera
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
     
-    // Refs
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const fileInputRef = useRef(null);
 
-    // --- 1. LOGIKA KAMERA (DIKEMBALIKAN) ---
     const startCamera = async () => {
         setIsCameraOpen(true);
         try {
@@ -48,24 +45,21 @@ export default function Camera() {
             const video = videoRef.current;
             const canvas = canvasRef.current;
             
-            // Set ukuran canvas sesuai video
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // Convert ke Blob (File)
             canvas.toBlob(blob => {
                 const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
-                processImage(file); // Kirim ke backend
+                processImage(file);
             }, 'image/jpeg');
             
             stopCamera();
         }
     };
 
-    // --- 2. LOGIKA UPLOAD & PROSES ---
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) processImage(file);
@@ -80,7 +74,6 @@ export default function Camera() {
         formData.append('image', file);
 
         try {
-            // Panggil Endpoint Backend Baru
             const res = await api.post('/scan', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
@@ -100,7 +93,6 @@ export default function Camera() {
         }
     };
 
-    // --- 3. LOGIKA SIMPAN ---
     const handleSave = async () => {
         if (!result) return;
         try {
@@ -124,16 +116,13 @@ export default function Camera() {
         }
     };
 
-    // Cleanup kamera saat unmount
     useEffect(() => {
         return () => stopCamera();
     }, []);
 
-    // --- UI RENDER ---
     return (
         <div className="h-full flex flex-col items-center justify-center p-4 pb-24 min-h-screen">
             
-            {/* A. TAMPILAN AWAL (MENU PILIHAN) */}
             {!imageSrc && !isCameraOpen && (
                 <div className="w-full max-w-lg bg-white/70 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-2xl text-center space-y-8">
                     <div className="space-y-2">
@@ -159,12 +148,10 @@ export default function Camera() {
                 </div>
             )}
 
-            {/* B. TAMPILAN LIVE KAMERA (FULLSCREEN OVERLAY) */}
             {isCameraOpen && (
                 <div className="fixed inset-0 z-50 bg-black flex flex-col">
                     <video ref={videoRef} autoPlay playsInline className="flex-1 w-full h-full object-cover" />
                     
-                    {/* Controls Kamera */}
                     <div className="absolute bottom-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-center pb-12">
                         <button onClick={stopCamera} className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition">
                             <X size={24} weight="bold"/>
@@ -174,21 +161,18 @@ export default function Camera() {
                             <div className="w-16 h-16 bg-white rounded-full border-2 border-black"></div>
                         </button>
                         
-                        <div className="w-14"></div> {/* Spacer */}
+                        <div className="w-14"></div>
                     </div>
                     <canvas ref={canvasRef} className="hidden" />
                 </div>
             )}
 
-            {/* C. TAMPILAN HASIL SCAN (DENGAN PERINGATAN MEDIS) */}
             {imageSrc && (
                 <div className="w-full max-w-md bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden relative flex flex-col h-[85vh]">
                     
-                    {/* Header Gambar */}
                     <div className="relative h-56 flex-shrink-0 bg-slate-900">
                         <img src={imageSrc} className="w-full h-full object-cover opacity-90" alt="Scan" />
                         
-                        {/* Loading State */}
                         {loading && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-10">
                                 <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-3"></div>
@@ -196,7 +180,6 @@ export default function Camera() {
                             </div>
                         )}
                         
-                        {/* Judul Makanan */}
                         {!loading && result && (
                             <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4">
                                 <h2 className="text-xl font-bold text-white truncate capitalize">{result.food_name}</h2>
@@ -205,11 +188,9 @@ export default function Camera() {
                         )}
                     </div>
 
-                    {/* Konten Scrollable */}
                     {!loading && result && (
                         <div className="flex-1 overflow-y-auto p-6 bg-white">
                             
-                            {/* 🔥 ALERT SECTION (MEDICAL EXPERT) 🔥 */}
                             {result.health_risk && !result.health_risk.isSafe ? (
                                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 animate-pulse">
                                     <div className="flex items-center gap-2 mb-3">
@@ -242,7 +223,6 @@ export default function Camera() {
                                 </div>
                             )}
 
-                            {/* Grid Nutrisi */}
                             <div className="grid grid-cols-3 gap-2 text-center mb-6">
                                 <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
                                     <div className="text-[10px] text-slate-400 uppercase font-bold mb-1">Kalori</div>
@@ -258,7 +238,6 @@ export default function Camera() {
                                 </div>
                             </div>
 
-                            {/* List Rincian Makanan */}
                             <div className="mb-20">
                                 <div className="flex items-center gap-2 mb-3 text-slate-400">
                                     <ListBullets size={18} weight="bold"/>
@@ -281,7 +260,6 @@ export default function Camera() {
                         </div>
                     )}
 
-                    {/* Footer Buttons */}
                     {!loading && result && (
                         <div className="absolute bottom-0 w-full p-4 border-t border-slate-100 bg-white">
                             <div className="flex gap-3">
@@ -306,7 +284,7 @@ export default function Camera() {
                         </div>
                     )}
                 </div>
-            )}
+            )}  
         </div>
     );
 }

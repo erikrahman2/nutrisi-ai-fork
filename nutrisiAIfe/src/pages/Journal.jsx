@@ -163,7 +163,7 @@ export default function Journal() {
     };
 
     return (
-        <div className="space-y-8 animate-fade-in pb-40">
+        <div className="space-y-8 animate-fade-in w-full">
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row justify-between items-end">
                     <div>
@@ -176,22 +176,22 @@ export default function Journal() {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-center">
+                    <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-center transition-all hover:scale-105">
                         <span className="text-[10px] font-bold text-slate-400 uppercase">Total Kalori</span>
                         <span className="text-2xl font-extrabold text-slate-800">{Math.round(nutrition.calories)}</span>
                         <span className="text-xs text-slate-500">kkal</span>
                     </div>
-                    <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-center">
+                    <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-center transition-all hover:scale-105">
                         <span className="text-[10px] font-bold text-purple-400 uppercase">Total Gula</span>
                         <span className="text-2xl font-extrabold text-purple-600">{Math.round(nutrition.sugar)}g</span>
                         <span className="text-xs text-slate-500">Batas: {targets.sugar}g</span>
                     </div>
-                    <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-center">
+                    <div className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-center transition-all hover:scale-105">
                         <span className="text-[10px] font-bold text-slate-400 uppercase">Total Garam</span>
                         <span className="text-2xl font-extrabold text-slate-600">{Math.round(nutrition.salt)}mg</span>
                         <span className="text-xs text-slate-500">Batas: {targets.salt}mg</span>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-2xl shadow-lg text-white flex flex-col justify-center">
+                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-2xl shadow-lg text-white flex flex-col justify-center transition-all hover:shadow-blue-500/30">
                         <span className="text-[10px] font-bold text-blue-100 uppercase">Status Umum</span>
                         <span className="text-lg font-bold flex items-center gap-2">
                             <ShieldCheck size={20} weight="fill"/> 

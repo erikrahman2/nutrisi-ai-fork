@@ -8,20 +8,24 @@ const fs = require('fs');
 dotenv.config();
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: '*', 
+    credentials: true
+}));
+
 app.use(express.json());
+
 
 if (!fs.existsSync('uploads')){
     fs.mkdirSync('uploads');
 }
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api', require('./routes/apiRoutes'));
 
 sequelize.sync({ alter: true }) 
-    .then(() => console.log('✅ Database & Tables Synced!'))
+    .then(() => console.log('✅ Database Synced!'))
     .catch(err => console.error('❌ DB Error:', err));
 
 const PORT = process.env.PORT || 5000;

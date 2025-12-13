@@ -1,11 +1,24 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS 
 from ultralytics import YOLO
 from PIL import Image
 import io
+import os
 from food_data import get_nutrition_info
 
 app = Flask(__name__)
-model = YOLO('best.pt') 
+
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+try:
+    model = YOLO('best.pt') 
+except:
+    print("Warning: best.pt not found, using yolov8n.pt")
+    model = YOLO('yolov8n.pt') 
+
+@app.route('/', methods=['GET'])
+def home():
+    return "ML Engine is Running!", 200
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -18,18 +31,19 @@ def predict():
     try:
         img = Image.open(io.BytesIO(img_bytes))
 
-        # Tuning Agresif untuk menangkap semua objek di piring
-        results = model(img, conf=0.05, iou=0.50, imgsz=640, agnostic_nms=True)
+        results = model(img, conf=0.50, iou=0.50, imgsz=640, agnostic_nms=True)
         
         detected_items = []
-        
         for result in results:
             for box in result.boxes:
                 cls = int(box.cls[0])
                 label = model.names[cls]
                 conf = float(box.conf[0])
                 
-                nutrition = get_nutrition_info(label)
+                try:
+                    nutrition = get_nutrition_info(label)
+                except:
+                    nutrition = {"kalori": 0, "info": "Data tidak ada"}
                 
                 detected_items.append({
                     "food_name": label,
@@ -39,7 +53,6 @@ def predict():
 
         return jsonify({
             "success": True,
-            "message": "Deteksi selesai",
             "items": detected_items
         })
 

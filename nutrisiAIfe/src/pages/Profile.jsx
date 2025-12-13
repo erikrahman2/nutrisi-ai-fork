@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import { 
-    User, Ruler, Barbell, Heartbeat, 
+    User, Ruler, 
     WarningCircle, CheckCircle, SignOut, 
     IdentificationCard, CalendarBlank, GenderIntersex
 } from '@phosphor-icons/react';
@@ -80,7 +80,6 @@ export default function Profile() {
         try {
             await api.put('/profile', formData);
             
-         
             updateUser(formData);
 
             Swal.fire({
@@ -99,7 +98,7 @@ export default function Profile() {
     return (
         <div className="space-y-8 animate-fade-in pb-24">
             
-            <div className="flex flex-col md:flex-row justify-between items-end gap-4">
+            <div className="flex justify-between items-end mb-6">
                 <div>
                     <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Profil Saya</h2>
                     <p className="text-slate-500 text-sm mt-1">Kelola data fisik dan riwayat kesehatan</p>
