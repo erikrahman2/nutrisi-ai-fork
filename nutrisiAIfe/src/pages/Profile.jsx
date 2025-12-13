@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-import { useEffect, useState, useContext } from 'react';
-import api from '../services/api';
-import { AuthContext } from '../context/AuthContext';
-import Swal from 'sweetalert2';
-import dayjs from 'dayjs';
-import { 
-    User, Ruler, 
-    WarningCircle, CheckCircle, SignOut, 
-    IdentificationCard, CalendarBlank, GenderIntersex
-} from '@phosphor-icons/react';
-=======
 import { useEffect, useState, useContext } from "react";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
@@ -27,7 +15,6 @@ import {
   CalendarBlank,
   GenderIntersex,
 } from "@phosphor-icons/react";
->>>>>>> 9bac635efadb57b6c097a9f2db5f65e02f3525b9
 
 export default function Profile() {
   const { logout, updateUser } = useContext(AuthContext);
@@ -68,27 +55,12 @@ export default function Profile() {
 
         let conditions = [];
         try {
-<<<<<<< HEAD
-            await api.put('/profile', formData);
-            
-            updateUser(formData);
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Profil Diperbarui',
-                text: 'Target nutrisi Anda telah dikalkulasi ulang sesuai aktivitas baru.',
-                confirmButtonColor: '#2563eb'
-            });
-        } catch (err) {
-            Swal.fire('Error', 'Gagal menyimpan perubahan', 'error');
-=======
           conditions =
             typeof data.medical_conditions === "string"
               ? JSON.parse(data.medical_conditions)
               : data.medical_conditions;
         } catch (e) {
           conditions = [];
->>>>>>> 9bac635efadb57b6c097a9f2db5f65e02f3525b9
         }
 
         setFormData({
@@ -111,20 +83,6 @@ export default function Profile() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-<<<<<<< HEAD
-    return (
-        <div className="space-y-8 animate-fade-in pb-24">
-            
-            <div className="flex justify-between items-end mb-6">
-                <div>
-                    <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Profil Saya</h2>
-                    <p className="text-slate-500 text-sm mt-1">Kelola data fisik dan riwayat kesehatan</p>
-                </div>
-                <button onClick={logout} className="bg-red-50 text-red-600 px-5 py-2.5 rounded-xl text-sm font-bold border border-red-100 hover:bg-red-100 transition flex items-center gap-2">
-                    <SignOut size={18} weight="bold"/> Logout
-                </button>
-            </div>
-=======
   const toggleCondition = (cond) => {
     setFormData((prev) => {
       const exists = prev.medical_conditions.includes(cond);
@@ -134,7 +92,6 @@ export default function Profile() {
       return { ...prev, medical_conditions: newConds };
     });
   };
->>>>>>> 9bac635efadb57b6c097a9f2db5f65e02f3525b9
 
   const handleSave = async () => {
     try {
@@ -160,15 +117,16 @@ export default function Profile() {
       <div className="flex flex-col md:flex-row justify-between items-end gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-            Profil Saya
+            Kelola data fisik dan riwayat kesehatan
           </h2>
           <p className="text-slate-500 text-sm mt-1">
-            Kelola data fisik dan riwayat kesehatan
+            Pastikan anda mengisi data pada halaman ini dengan benar untuk
+            menghitung BMR dan kebutuhan kalori Anda.
           </p>
         </div>
         <button
           onClick={logout}
-          className="bg-red-50 text-red-600 px-5 py-2.5 rounded-xl text-sm font-bold border border-red-100 hover:bg-red-100 transition flex items-center gap-2"
+          className="md:hidden bg-red-50 text-red-600 px-5 py-2.5 rounded-xl text-sm font-bold border border-red-100 hover:bg-red-100 transition flex items-center gap-2"
         >
           <SignOut size={18} weight="bold" /> Logout
         </button>
@@ -245,8 +203,8 @@ export default function Profile() {
                   Data Fisik & Identitas
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Isi data dibawah ini untuk menghitung BMR dan kebutuhan kalori
-                  Anda.
+                  Data ini digunakan untuk menghitung kebutuhan kalori harian
+                  anda.
                 </p>
               </div>
             </div>
